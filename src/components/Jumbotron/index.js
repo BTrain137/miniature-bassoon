@@ -3,7 +3,7 @@ import "./style.css";
 
 const Jumbotron = ({ children }) => {
   return (
-    <div style={{ "position": "relative"}}>
+    <div className="position-relative">
       <div className="jumbotron jumbotron-fluid" style={{ "backgroundImage": "url("+ process.env.PUBLIC_URL + "./assets/fleece_lined_winter_headband.jpg)"}}>
       </div>
       <div className="container jumbotron-body d-flex align-items-center justify-content-center flex-column">

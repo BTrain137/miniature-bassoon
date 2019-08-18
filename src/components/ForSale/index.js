@@ -29,7 +29,7 @@ class ForSale extends Component {
       <section className="for-sale mt-4">
         <div className="text-center mb-3">
           <h3 className="title">TRENDING</h3>
-          <div className="block-note">Top view in this week</div>
+          <div className="block-note">{ this.props.children }</div>
         </div>
         <div className="container mx-auto row">
           {this.state.cards.map(function(card, i){
