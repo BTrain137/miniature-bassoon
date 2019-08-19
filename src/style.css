@@ -39,6 +39,10 @@ blockquote,
   font-family: "Libre Baskerville";
 }
 
-.text-color-theme {
+.theme-text-color {
   color: #878787;
+}
+
+.theme-background-color {
+  background-color: rgb(248, 249, 250);
 }
