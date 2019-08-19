@@ -4,6 +4,8 @@ import Home from "./pages/Home";
 import Cart from "./pages/Cart";
 import NoMatch from "./pages/NoMatch";
 import Nav from "./components/Nav";
+import Footer from "./components/Footer";
+import "./style.css";
 
 function App() {
   return (
@@ -15,6 +17,7 @@ function App() {
           <Route exact path="/cart" component={Cart} />
           <Route component={NoMatch} />
         </Switch>
+        <Footer />
       </div>
     </Router>
   );

@@ -1,3 +1,28 @@
 .jumbotron {
-  padding: 100px;
+    padding: 100px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 360px;
+    width: 100%;
+    background-size: cover;
+    opacity: 0.5;
+}
+
+.tron-btn {
+    color: #212529;
+    border: 2px solid #212529;
+    border-radius: 40px;
+    padding: 10px 20px;
+    background-color: transparent;
+}
+
+.tron-btn:hover {
+    color: white;
+    background-color: #212529;
+}
+
+.jumbotron-body {
+    height: 360px;
+    position: relative;
 }
