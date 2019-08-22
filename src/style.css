@@ -43,6 +43,14 @@ blockquote,
   color: #878787;
 }
 
+.theme-text-color-sec {
+  color: #a5674d;
+}
+
 .theme-background-color {
   background-color: rgb(248, 249, 250);
+}
+
+.cursor-pointer{
+  cursor: pointer;
 }
