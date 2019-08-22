@@ -8,27 +8,30 @@ const all_product_url =
   "https://7io32bkt5j.execute-api.us-west-2.amazonaws.com/dev/shopify/all-products";
 
 class ForSale extends Component {
+
   state = {
     cards: []
   };
 
   componentDidMount() {
-    fetch(all_product_url, items => {
 
-      const productCards = items.map(function(datam) {
-        return {
-          title: datam.title,
-          handle: datam.handle,
-          image: datam.image.src,
-          price: datam.variants[0].price
-        };
-      });
-    // console.log(productCards);
-      this.setState({
-        cards: productCards
-      });
-    });
+    fetch(all_product_url)
+      .then(items => items.json())
+      .then(items => {
 
+        const cards = items
+          .map(({ title, handle, image, variants }) => (
+            {
+              title,
+              handle,
+              image: image.src,
+              price: variants[0].price
+            }
+          ));
+
+        this.setState({ cards });
+
+      });
   }
 
   render() {
@@ -39,7 +42,7 @@ class ForSale extends Component {
           <div className="block-note">{this.props.children}</div>
         </div>
         <div className="container mx-auto row">
-          {this.state.cards.map(function(card, i) {
+          {this.state.cards.map(function (card, i) {
             return (
               <Card
                 key={i}
