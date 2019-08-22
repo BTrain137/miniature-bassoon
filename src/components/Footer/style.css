@@ -22,10 +22,6 @@ ul.list-icon li {
   padding-inline-start: 0;
 }
 
-.footer a {
-  color: #878787;
-}
-
 .block.newsletter {
   border-radius: 50px;
   -webkit-border-radius: 50px;
@@ -45,8 +41,8 @@ ul.list-icon li {
   display: table-cell;
 }
 
-.form-group {
-  margin-bottom: 15px;
+.block.newsletter .form.subscribe .actions {
+  width: 1%;
 }
 
 .block.newsletter .form.subscribe .form-group input[type="email"] {
@@ -64,7 +60,15 @@ ul.list-icon li {
   padding: 0 15px;
 }
 
-.btn.btn-sm {
+.btn-subscribe {
   font-size: 14px;
   padding: 0 30px;
+}
+
+.footer-payment-img {
+  width: 197px;
+  height: 20px;
+  background-repeat: no-repeat;
+  display: block;
+  background-position: 0px -54px;
 }
