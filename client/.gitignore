@@ -23,5 +23,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# AWS API / Lambda
+# LMR-BackEnd Playground
 /server
