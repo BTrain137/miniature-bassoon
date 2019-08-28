@@ -1,0 +1,74 @@
+footer {
+  color: #878787;
+}
+
+ul.list-icon li .icon {
+  font-size: 24px;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+ul.list-icon li {
+  padding-left: 30px;
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.list-icon {
+  list-style: none;
+  margin: 0;
+  padding-inline-start: 0;
+}
+
+.block.newsletter {
+  border-radius: 50px;
+  -webkit-border-radius: 50px;
+  -moz-border-radius: 50px;
+  -o-border-radius: 50px;
+  border: 1px solid #878787;
+  padding: 2px;
+}
+
+.block.newsletter .form.subscribe {
+  display: table;
+  position: relative;
+}
+
+.block.newsletter .form.subscribe .form-group, 
+.block.newsletter .form.subscribe .actions {
+  display: table-cell;
+}
+
+.block.newsletter .form.subscribe .actions {
+  width: 1%;
+}
+
+.block.newsletter .form.subscribe .form-group input[type="email"] {
+  height: 39px;
+  border-radius: 50px;
+  -webkit-border-radius: 50px;
+  -moz-border-radius: 50px;
+  -o-border-radius: 50px;
+  border: none;
+  padding: 0 10px;
+  background-color: transparent;
+}
+
+.block.newsletter .form.subscribe .actions .action.subscribe {
+  padding: 0 15px;
+}
+
+.btn-subscribe {
+  font-size: 14px;
+  padding: 0 30px;
+}
+
+.footer-payment-img {
+  width: 197px;
+  height: 20px;
+  background-repeat: no-repeat;
+  display: block;
+  background-position: 0px -54px;
+}
