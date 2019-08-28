@@ -17,7 +17,8 @@ class ForSale extends Component {
     fetch(all_product_url)
       .then(items => items.json())
       .then(items => {
-        const cards = items.map(({ title, handle, image, variants }) => ({
+        const cards = items.map(({ title, handle, image, variants, id }) => ({
+          id,
           title,
           handle,
           image: image.src,
@@ -26,6 +27,10 @@ class ForSale extends Component {
 
         this.setState({ cards, display: "d-none" });
       });
+  }
+
+  addToCart = (id) => {
+    console.log(id)
   }
 
   render() {
@@ -41,17 +46,19 @@ class ForSale extends Component {
             style={{ width: "3rem", height: "3rem" }}
             role="status"
           >
-            <span class="sr-only">Loading...</span>
+            <span className="sr-only">Loading...</span>
           </div>
         </div>
         <div className="container mx-auto row">
-          {this.state.cards.map(function(card, i) {
+          {this.state.cards.map((card, i) => {
             return (
               <Card
                 key={i}
                 price={card.price}
                 image={card.image}
                 handle={card.handle}
+                id={card.id}
+                onClick={this.addToCart}
               >
                 {card.title}
               </Card>
