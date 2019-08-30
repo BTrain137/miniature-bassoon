@@ -1,42 +1,69 @@
 import React, { Component } from "react";
 import { Container } from "react-bootstrap";
+import { Link, Redirect } from "react-router-dom";
 import data from "./cartDummyData.json";
+import Client from "shopify-buy";
 import "./style-cart.css";
+
+const shopifyAPI = Client.buildClient({
+  domain: "fantasticheadbands.myshopify.com",
+  storefrontAccessToken: "caf3407b04b77828c161e497b106ab42"
+});
 
 class Saved extends Component {
   state = {
-    cart: [],
-    cartItems: [],
     orderNotes: "",
     subTotal: 0,
+    webUrl: "",
+    cartItems: [],
+    cartId:
+      "Z2lkOi8vc2hvcGlmeS9DaGVja291dC9iN2E3MmU1ZGE4NDk5ZTRkMzM0YmM2MDMxMjBlOWVjOD9rZXk9ZjI2YTMwYTRjMTlhOTAxMzAyYTBiYjZiZGJhNDdjNGE=",
   };
 
   componentDidMount() {
-    const cartItems = data.items.map((item, index) => {
-      return {
-        id: index,
-        price: (item.price / 100).toFixed(2),
-        quantity: item.quantity,
-        title: item.product_title,
-        image: item.image,
-        handle: item.handle,
-        variant_id: item.variant_id,
-        key: item.key
-      };
-    });
+    shopifyAPI.checkout.fetch(this.state.cartId).then(checkout => {
+      const cartItems = checkout.lineItems.map(
+        ({ title, id, variant, quantity }) => {
+          return {
+            title,
+            id,
+            quantity,
+            variant_id: variant.id,
+            price: variant.price,
+            image: variant.image.src,
+            key: id
+          };
+        }
+      );
 
-    this.setState({ cartItems: cartItems });
-    this.subTotal(cartItems);
+      this.setState({ cartItems: cartItems });
+      this.subTotal(cartItems);
+    });
   }
 
+  updateLineItem = () => {};
+
+  goToShopifyCheckout = async () => {
+    if (this.state.cartId) {
+      const webUrl = await shopifyAPI.checkout
+        .fetch(this.state.cartId)
+        .then(checkout => {
+          return checkout.webUrl;
+        });
+
+      this.setState({ webUrl });
+      window.location.replace(this.state.webUrl);
+    }
+  };
+
   trashCan = id => {
-    const cartItems = this.state.cartItems.filter(item => item.id !== id);
+    const cartItems = [...this.state.cartItems].filter(item => item.id !== id);
     console.log(cartItems);
     this.setState({ cartItems });
   };
 
   upDateQuantity = (id, math) => {
-    const cart = this.state.cartItems.filter(item => {
+    const cart = [...this.state.cartItems].filter(item => {
       if (item.id === id) {
         item.quantity += parseInt(math);
       }
@@ -73,15 +100,28 @@ class Saved extends Component {
           return (
             <div className="row cart-row" key={item.key}>
               <div className="offset-1 col-2 d-none d-md-block">
-                <img className="img-fluid" src={item.image} alt={item.title} style={{ minWidth: "145px" }}/>
+                <img
+                  className="img-fluid"
+                  src={item.image}
+                  alt={item.title}
+                  style={{ minWidth: "145px" }}
+                />
               </div>
               <div className="col-12 col-md-9">
                 <div className="row mb-5">
                   <div className="offset-1 col-10">
-                    <span className="theme-text-color-sec d-inline-block text-truncate" style={{ maxWidth: "90%" }}>
+                    <span
+                      className="theme-text-color-sec d-inline-block text-truncate"
+                      style={{ maxWidth: "90%" }}
+                    >
                       {item.title}
                     </span>
-                      <div className="cursor-pointer" onClick={() => this.trashCan(item.id)}>🗑</div>
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => this.trashCan(item.id)}
+                    >
+                      🗑
+                    </div>
                   </div>
                 </div>
                 <div className="row d-flex justify-content-around">
@@ -134,7 +174,8 @@ class Saved extends Component {
                     </div>
                   </div>
                   <div>
-                    Total <br /> <br /> ${(item.price * item.quantity).toFixed(2)}
+                    Total <br /> <br /> $
+                    {(item.price * item.quantity).toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -158,10 +199,17 @@ class Saved extends Component {
         </div>
         <div className="row d-flex justify-content-between">
           <div className="offset-1 col-2">
-            <button className="btn btn-danger" onClick={this.removeAll}>REMOVE ALL</button>
+            <button className="btn btn-danger" onClick={this.removeAll}>
+              REMOVE ALL
+            </button>
           </div>
           <div className="col-2">
-            <button className="btn btn-success">Checkout</button>
+            <button
+              className="btn btn-success"
+              onClick={this.goToShopifyCheckout}
+            >
+              Checkout
+            </button>
           </div>
         </div>
       </Container>
