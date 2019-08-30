@@ -3,5 +3,29 @@
 }
 
 .navbar-logo {
-    height: 60px;
+  height: 60px;
+}
+
+.nav-cart-icon {
+  font-size: 50px;
+  font-weight: 900;
+  margin-right: -10px;
+}
+
+.nav-cart-item-none,
+.nav-cart-item-number {
+  color: white;
+  padding: 3px 11px;
+  border-radius: 35px;
+  height: 30px;
+  float: right;
+}
+
+.nav-cart-item-number {
+  background-color: #0d2a6f;
+}
+
+.nav-cart-item-none {
+  background-color: rgb(248, 249, 250);
+  color:rgb(248, 249, 250);
 }
