@@ -8,31 +8,24 @@ const shopifyAPI = Client.buildClient({
   storefrontAccessToken: "caf3407b04b77828c161e497b106ab42"
 });
 
-// import data from "./dummyData.json";
-
-const all_product_url =
-  "https://7io32bkt5j.execute-api.us-west-2.amazonaws.com/dev/shopify/all-products";
+// const all_product_url =
+// "https://7io32bkt5j.execute-api.us-west-2.amazonaws.com/dev/shopify/all-products";
 
 class ForSale extends Component {
   state = {
     cards: [],
     lineItems: [],
-    cartId:
-      "Z2lkOi8vc2hvcGlmeS9DaGVja291dC9iN2E3MmU1ZGE4NDk5ZTRkMzM0YmM2MDMxMjBlOWVjOD9rZXk9ZjI2YTMwYTRjMTlhOTAxMzAyYTBiYjZiZGJhNDdjNGE=",
+    cartId: ""
   };
 
   componentDidMount() {
     shopifyAPI.product
       .fetchAll()
       .then(products => {
-        console.log(products);
-
-        const cards = products.map(({ variants, handle, images, title }) => {
+        const cards = products.map(({ variants, title }) => {
           return {
-            id: variants[0].id,
-            handle,
-            image: images[0].src,
-            title
+            title,
+            variants
           };
         });
 
@@ -43,13 +36,24 @@ class ForSale extends Component {
       });
   }
 
-  addToCart = id => {
+  addToCart = variant => {
+    console.log("variant", variant);
+    let isItemExist = false;
     let lineItems = [...this.state.lineItems];
-    lineItems.push({
-      quantity: 1,
-      variantId: id
-    });
+    if (lineItems.length) {
+      lineItems.forEach(lineItem => {
+        if (lineItem.variant_id === variant.variant_id) {
+          lineItem.quantity += 1;
+          isItemExist = true;
+        }
+      });
+    }
 
+    if (!isItemExist) {
+      lineItems.push(variant);
+    }
+
+    console.log("lineItems", lineItems);
     this.setState({ lineItems });
   };
 
@@ -82,7 +86,7 @@ class ForSale extends Component {
         console.log(checkout);
       });
     }
-  }
+  };
 
   render() {
     return (
@@ -97,11 +101,8 @@ class ForSale extends Component {
               return (
                 <Card
                   key={i}
-                  price={card.price}
-                  image={card.image}
-                  handle={card.handle}
-                  id={card.id}
-                  onClick={this.addToCart}
+                  variants={card.variants}
+                  addToCart={this.addToCart}
                 >
                   {card.title}
                 </Card>
