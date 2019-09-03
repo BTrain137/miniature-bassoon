@@ -1,69 +1,29 @@
 import React, { Component } from "react";
-import { Link, Redirect } from "react-router-dom";
-import Client from "shopify-buy";
+import { Link } from "react-router-dom";
 import "./style.css";
 
-const shopifyAPI = Client.buildClient({
-  domain: "fantasticheadbands.myshopify.com",
-  storefrontAccessToken: "caf3407b04b77828c161e497b106ab42"
-});
+import lineItems from "../../pages/cartDummyData.json";
 
 class Nav extends Component {
   state = {
-    open: false,
-    width: window.innerWidth,
-    goToCart: false,
     lineItems: [],
-    cartId:
-      "Z2lkOi8vc2hvcGlmeS9DaGVja291dC9iN2E3MmU1ZGE4NDk5ZTRkMzM0YmM2MDMxMjBlOWVjOD9rZXk9ZjI2YTMwYTRjMTlhOTAxMzAyYTBiYjZiZGJhNDdjNGE="
-  };
-
-  updateWidth = () => {
-    const newState = { width: window.innerWidth };
-
-    if (this.state.open && newState.width > 991) {
-      newState.open = false;
-    }
-
-    this.setState(newState);
+    cartNumQuantity: 0,
+    cartId: ""
   };
 
   componentDidMount() {
-    window.addEventListener("resize", this.updateWidth);
+    this.updateCartQuantity();
   }
 
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.updateWidth);
+  updateCartQuantity() {
+    let cartNumQuantity = lineItems.reduce((total, { quantity }) => {
+      return parseInt(total) + parseInt(quantity);
+    }, 0);
+
+    this.setState({ cartNumQuantity });
   }
-
-  addItemsToCart = async () => {
-    if (this.state.lineItems.length > 0) {
-      if (!this.state.cartId) {
-        const cartId = await shopifyAPI.checkout.create().then(checkout => {
-          return checkout.id;
-        });
-
-        console.log("cartId", cartId);
-        this.setState({ cartId });
-      }
-
-      const lineItemsAdd = await shopifyAPI.checkout
-        .addLineItems(this.state.cartId, this.state.lineItems)
-        .then(checkout => {
-          return checkout.lineItems;
-        });
-
-      console.log("checkout.lineItems", lineItemsAdd);
-    }
-
-    this.setState({ goToCart: true });
-  };
 
   render() {
-    if (this.state.goToCart === true) {
-      return <Redirect to="/cart" />;
-    }
-
     return (
       <div>
         <div className="row fixed-top theme-background-color">
@@ -79,16 +39,16 @@ class Nav extends Component {
               <div className="" id="navbarNav">
                 <ul className="navbar-nav">
                   <li className="nav-item">
-                    <div onClick={this.addItemsToCart}>
+                    <Link to="/cart">
                       <i className="pe-7s-cart nav-cart-icon" />
-                      {this.state.lineItems.length ? (
+                      {this.state.cartNumQuantity ? (
                         <span className="nav-cart-item-number">
-                          {this.state.lineItems.length}
+                          {this.state.cartNumQuantity}
                         </span>
                       ) : (
                         <span className="nav-cart-item-none">0</span>
                       )}
-                    </div>
+                    </Link>
                   </li>
                 </ul>
               </div>
