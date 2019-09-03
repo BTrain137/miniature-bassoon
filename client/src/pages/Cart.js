@@ -1,9 +1,10 @@
 import React, { Component } from "react";
 import { Container } from "react-bootstrap";
-import { Link, Redirect } from "react-router-dom";
-import data from "./cartDummyData.json";
+import { Link } from "react-router-dom";
 import Client from "shopify-buy";
 import "./style-cart.css";
+
+import lineItems from "./cartDummyData.json";
 
 const shopifyAPI = Client.buildClient({
   domain: "fantasticheadbands.myshopify.com",
@@ -15,33 +16,18 @@ class Saved extends Component {
     orderNotes: "",
     subTotal: 0,
     webUrl: "",
-    cartItems: [],
-    cartId:
-      "Z2lkOi8vc2hvcGlmeS9DaGVja291dC9iN2E3MmU1ZGE4NDk5ZTRkMzM0YmM2MDMxMjBlOWVjOD9rZXk9ZjI2YTMwYTRjMTlhOTAxMzAyYTBiYjZiZGJhNDdjNGE=",
+    lineItems: [],
+    cartId: ""
   };
 
   componentDidMount() {
-    shopifyAPI.checkout.fetch(this.state.cartId).then(checkout => {
-      const cartItems = checkout.lineItems.map(
-        ({ title, id, variant, quantity }) => {
-          return {
-            title,
-            id,
-            quantity,
-            variant_id: variant.id,
-            price: variant.price,
-            image: variant.image.src,
-            key: id
-          };
-        }
-      );
-
-      this.setState({ cartItems: cartItems });
-      this.subTotal(cartItems);
+    const variantIds = {};
+    lineItems.forEach(cartItem => {
+      variantIds["updates_" + cartItem.variant_id] = cartItem.quantity;
     });
+    this.setState({ lineItems, ...variantIds });
+    this.subTotal(lineItems);
   }
-
-  updateLineItem = () => {};
 
   goToShopifyCheckout = async () => {
     if (this.state.cartId) {
@@ -56,132 +42,170 @@ class Saved extends Component {
     }
   };
 
-  trashCan = id => {
-    const cartItems = [...this.state.cartItems].filter(item => item.id !== id);
-    console.log(cartItems);
-    this.setState({ cartItems });
+  trashCan = variantId => {
+    const lineItems = this.state.lineItems.filter(
+      item => item.variant_id !== variantId
+    );
+    this.setState({ lineItems });
+    this.subTotal(lineItems);
   };
 
-  upDateQuantity = (id, math) => {
-    const cart = [...this.state.cartItems].filter(item => {
-      if (item.id === id) {
-        item.quantity += parseInt(math);
+  upDateQuantity = (variantId, math) => {
+    const cart = this.state.lineItems.filter(item => {
+      if (item.variant_id === variantId) {
+        if (item.quantity > 0) {
+          item.quantity += parseInt(math);
+        } 
+        else if (math === "1"  && item.quantity === 0) {
+          item.quantity += 1;
+        }
+
+        this.setState({ ["updates_" + variantId]: item.quantity });
       }
-      if (item.quantity > 0) {
-        return item;
-      }
+      return item;
     });
     this.subTotal(cart);
   };
 
-  removeAll = () => this.setState({ cart: [] });
+  removeAll = () => this.setState({ lineItems: [], subTotal: 0 });
 
   subTotal = cart => {
-    console.log(cart);
     const subTotal = cart.reduce((acc, item) => {
-      return parseInt(item.quantity) * parseInt(item.price) + acc;
+      return +item.quantity * parseFloat(item.price) + acc;
     }, 0);
-    this.setState({ subTotal, cart });
+    this.setState({ subTotal });
   };
 
   onChange = e => {
-    console.log(e.target.name, e.target.value);
-    this.setState({ [e.target.name]: e.target.value });
+    const re = /^[0-9\b]+$/;
+    const variantId = e.target.getAttribute("data-id");
+    const inputValue = e.target.value;
+
+    if ((inputValue === "" || re.test(inputValue)) && inputValue < 100) {
+      const lineItems = this.state.lineItems.map(item => {
+        if (item.variant_id === variantId) {
+          item.quantity = +inputValue;
+        }
+        return item;
+      });
+      this.setState({ lineItems, [e.target.name]: +inputValue });
+      this.subTotal(lineItems);
+    }
   };
 
   render() {
     return (
       <Container>
-        <h1 className="theme-text-color display-4 text-center my-3">
+        <h1 className="theme-text-color-sec display-4 text-center my-3">
           Your Cart
         </h1>
 
-        {this.state.cartItems.map(item => {
-          return (
-            <div className="row cart-row" key={item.key}>
-              <div className="offset-1 col-2 d-none d-md-block">
-                <img
-                  className="img-fluid"
-                  src={item.image}
-                  alt={item.title}
-                  style={{ minWidth: "145px" }}
-                />
-              </div>
-              <div className="col-12 col-md-9">
-                <div className="row mb-5">
-                  <div className="offset-1 col-10">
-                    <span
-                      className="theme-text-color-sec d-inline-block text-truncate"
-                      style={{ maxWidth: "90%" }}
-                    >
-                      {item.title}
-                    </span>
-                    <div
-                      className="cursor-pointer"
-                      onClick={() => this.trashCan(item.id)}
-                    >
-                      🗑
+        {this.state.lineItems.length ? (
+          this.state.lineItems.map(lineItem => {
+            return (
+              <div className="row cart-row" key={lineItem.variant_id}>
+                <div className="offset-1 col-2 d-none d-md-block">
+                  <img
+                    className="img-fluid"
+                    src={lineItem.image}
+                    alt={lineItem.title}
+                    style={{ minWidth: "145px" }}
+                  />
+                </div>
+                <div className="col-12 col-md-9">
+                  <div className="row mb-5">
+                    <div className="offset-1 col-10">
+                      <span
+                        className="theme-text-color-sec d-inline-block text-truncate"
+                        style={{ maxWidth: "90%" }}
+                      >
+                        {lineItem.title}
+                      </span>
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => this.trashCan(lineItem.variant_id)}
+                      >
+                        🗑
+                      </div>
+                    </div>
+                  </div>
+                  <div className="row d-flex justify-content-around">
+                    <div>
+                      Price <br /> <br />${lineItem.price}
+                    </div>
+                    <div className="text-center">
+                      <label
+                        htmlFor="updates_{item.id}"
+                        className="cart__mini-labels"
+                      >
+                        QTY
+                      </label>
+                      <div className="js-qty d-flex">
+                        <span
+                          className="adjust-qty p-2"
+                          onClick={() =>
+                            this.upDateQuantity(lineItem.variant_id, "-1")
+                          }
+                        >
+                          <span className="minus" aria-hidden="true">
+                            -
+                          </span>
+                          <span className="visuallyhidden">
+                            Reduce item quantity by one
+                          </span>
+                        </span>
+                        <input
+                          type="text"
+                          className="js--num"
+                          value={this.state["updates_" + lineItem.variant_id]}
+                          min="1"
+                          data-id={lineItem.variant_id}
+                          aria-label="quantity"
+                          pattern="[0-9]*"
+                          name={"updates_" + lineItem.variant_id}
+                          id={"updates_" + lineItem.variant_id}
+                          onChange={this.onChange}
+                        />
+                        <span
+                          className="adjust-qty p-2"
+                          onClick={() =>
+                            this.upDateQuantity(lineItem.variant_id, "1")
+                          }
+                        >
+                          <span className="add" aria-hidden="true">
+                            +
+                          </span>
+                          <span className="visuallyhidden">
+                            Increase item quantity by one
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      Total <br /> <br /> $
+                      {(lineItem.price * lineItem.quantity).toFixed(2)}
                     </div>
                   </div>
                 </div>
-                <div className="row d-flex justify-content-around">
-                  <div>
-                    Price <br /> <br />${item.price}
-                  </div>
-                  <div className="text-center">
-                    <label
-                      htmlFor="updates_{item.id}"
-                      className="cart__mini-labels"
-                    >
-                      QTY
-                    </label>
-                    <div className="js-qty d-flex">
-                      <span
-                        className="adjust-qty p-2"
-                        onClick={() => this.upDateQuantity(item.id, "-1")}
-                      >
-                        <span className="minus" aria-hidden="true">
-                          -
-                        </span>
-                        <span className="visuallyhidden">
-                          Reduce item quantity by one
-                        </span>
-                      </span>
-                      <input
-                        type="text"
-                        className="js--num"
-                        value={item.quantity}
-                        min="1"
-                        data-id={item.key}
-                        aria-label="quantity"
-                        pattern="[0-9]*"
-                        name={"updates_" + item.id}
-                        id={"updates_" + item.id}
-                        // onChange={(e)=> this.onChange(e)}
-                        readOnly
-                      />
-                      <span
-                        className="adjust-qty p-2"
-                        onClick={() => this.upDateQuantity(item.id, "1")}
-                      >
-                        <span className="add" aria-hidden="true">
-                          +
-                        </span>
-                        <span className="visuallyhidden">
-                          Increase item quantity by one
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    Total <br /> <br /> $
-                    {(item.price * item.quantity).toFixed(2)}
-                  </div>
-                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div
+            style={{ height: "30vh", minHeight: "300px" }}
+            className="d-flex align-items-center justify-content-center flex-column"
+          >
+            <h2 className="text-center">Empty Cart</h2>
+            <Link to="/">
+              <button
+                style={{ backgroundColor: "#A4664D", border: "none" }}
+                className="btn btn-primary btn-border-radius mt-4"
+              >
+                Continue Shopping
+              </button>
+            </Link>
+          </div>
+        )}
         <div className="row cart-row d-flex justify-content-between">
           <div className="offset-1 col-4">
             Order Notes:
@@ -199,13 +223,13 @@ class Saved extends Component {
         </div>
         <div className="row d-flex justify-content-between">
           <div className="offset-1 col-2">
-            <button className="btn btn-danger" onClick={this.removeAll}>
+            <button className="btn" onClick={this.removeAll}>
               REMOVE ALL
             </button>
           </div>
           <div className="col-2">
             <button
-              className="btn btn-success"
+              className="btn btn-border-radius theme-background-color-sec text-white"
               onClick={this.goToShopifyCheckout}
             >
               Checkout

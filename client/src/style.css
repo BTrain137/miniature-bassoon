@@ -51,6 +51,14 @@ blockquote,
   background-color: rgb(248, 249, 250);
 }
 
+.theme-background-color-sec {
+  background-color: #a5674d;
+}
+
 .cursor-pointer{
   cursor: pointer;
+}
+
+.btn-border-radius {
+  border-radius: 25px;
 }

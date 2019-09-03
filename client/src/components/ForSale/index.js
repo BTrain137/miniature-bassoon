@@ -8,81 +8,59 @@ const shopifyAPI = Client.buildClient({
   storefrontAccessToken: "caf3407b04b77828c161e497b106ab42"
 });
 
-// import data from "./dummyData.json";
-
-const all_product_url =
-  "https://7io32bkt5j.execute-api.us-west-2.amazonaws.com/dev/shopify/all-products";
+// const all_product_url =
+// "https://7io32bkt5j.execute-api.us-west-2.amazonaws.com/dev/shopify/all-products";
 
 class ForSale extends Component {
   state = {
     cards: [],
     lineItems: [],
-    cartId:
-      "Z2lkOi8vc2hvcGlmeS9DaGVja291dC9iN2E3MmU1ZGE4NDk5ZTRkMzM0YmM2MDMxMjBlOWVjOD9rZXk9ZjI2YTMwYTRjMTlhOTAxMzAyYTBiYjZiZGJhNDdjNGE=",
+    cartId: ""
   };
 
   componentDidMount() {
+    this._isMounted = true;
     shopifyAPI.product
       .fetchAll()
       .then(products => {
-        console.log(products);
-
-        const cards = products.map(({ variants, handle, images, title }) => {
+        const cards = products.map(({ variants, title }) => {
           return {
-            id: variants[0].id,
-            handle,
-            image: images[0].src,
-            title
+            title,
+            variants
           };
         });
 
-        this.setState({ cards });
+        if(this._isMounted) {
+          this.setState({ cards });
+        }
       })
       .catch(err => {
         console.log(err);
       });
   }
 
-  addToCart = id => {
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  addToCart = variant => {
+    let isItemExist = false;
     let lineItems = [...this.state.lineItems];
-    lineItems.push({
-      quantity: 1,
-      variantId: id
-    });
+    if (lineItems.length) {
+      lineItems.forEach(lineItem => {
+        if (lineItem.variant_id === variant.variant_id) {
+          lineItem.quantity += 1;
+          isItemExist = true;
+        }
+      });
+    }
+
+    if (!isItemExist) {
+      lineItems.push(variant);
+    }
 
     this.setState({ lineItems });
   };
-
-  // For Testing
-  checkout = async () => {
-    if (this.state.lineItems.length > 0) {
-      if (!this.state.cartId) {
-        const cartId = await shopifyAPI.checkout.create().then(checkout => {
-          return checkout.id;
-        });
-
-        console.log("cartId", cartId);
-        this.setState({ cartId });
-      }
-
-      const lineItemsAdd = await shopifyAPI.checkout
-        .addLineItems(this.state.cartId, this.state.lineItems)
-        .then(checkout => {
-          return checkout.lineItems;
-        });
-
-      console.log("checkout.lineItems", lineItemsAdd);
-    }
-  };
-
-  // For testing
-  fetchCheckout = () => {
-    if (this.state.cartId) {
-      shopifyAPI.checkout.fetch(this.state.cartId).then(checkout => {
-        console.log(checkout);
-      });
-    }
-  }
 
   render() {
     return (
@@ -97,11 +75,8 @@ class ForSale extends Component {
               return (
                 <Card
                   key={i}
-                  price={card.price}
-                  image={card.image}
-                  handle={card.handle}
-                  id={card.id}
-                  onClick={this.addToCart}
+                  variants={card.variants}
+                  addToCart={this.addToCart}
                 >
                   {card.title}
                 </Card>
@@ -119,13 +94,6 @@ class ForSale extends Component {
             </div>
           )}
         </div>
-        {/* Buttons For Testing */}
-        <button className="btn btn-primary" onClick={this.checkout}>
-          checkout
-        </button>
-        <button className="btn btn-success" onClick={this.fetchCheckout}>
-          Fetch Checkout
-        </button>
       </section>
     );
   }
