@@ -19,7 +19,7 @@ class Card extends Component {
       <div className="col-lg-3 col-md-4 col-sm-6 mb-5 mx-auto">
         <span
           className="d-inline-block text-truncate"
-          style={{ maxWidth: "248px" }}
+          style={{ maxWidth: "100%" }}
         >
           {this.props.children}
         </span>
@@ -39,7 +39,7 @@ class Card extends Component {
                     <strong>
                       <span
                         className="d-inline-block text-truncate"
-                        style={{ maxWidth: "248px" }}
+                        style={{ maxWidth: "100%" }}
                       >
                         {variant.title !== "Default Title" &&
                         variant.title.length > 2
@@ -52,7 +52,7 @@ class Card extends Component {
                     <span>${variant.price}</span>
                     <button
                       data-variant-id={variant.id}
-                      className="btn-sm btn-outline-success"
+                      className="btn-sm btn-outline-success btn-border-radius mr-2"
                       onClick={() =>
                         this.props.addToCart({
                           variant_id: variant.id,
