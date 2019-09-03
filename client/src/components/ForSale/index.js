@@ -19,6 +19,7 @@ class ForSale extends Component {
   };
 
   componentDidMount() {
+    this._isMounted = true;
     shopifyAPI.product
       .fetchAll()
       .then(products => {
@@ -29,15 +30,20 @@ class ForSale extends Component {
           };
         });
 
-        this.setState({ cards });
+        if(this._isMounted) {
+          this.setState({ cards });
+        }
       })
       .catch(err => {
         console.log(err);
       });
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
+
   addToCart = variant => {
-    console.log("variant", variant);
     let isItemExist = false;
     let lineItems = [...this.state.lineItems];
     if (lineItems.length) {
@@ -53,39 +59,7 @@ class ForSale extends Component {
       lineItems.push(variant);
     }
 
-    console.log("lineItems", lineItems);
     this.setState({ lineItems });
-  };
-
-  // For Testing
-  checkout = async () => {
-    if (this.state.lineItems.length > 0) {
-      if (!this.state.cartId) {
-        const cartId = await shopifyAPI.checkout.create().then(checkout => {
-          return checkout.id;
-        });
-
-        console.log("cartId", cartId);
-        this.setState({ cartId });
-      }
-
-      const lineItemsAdd = await shopifyAPI.checkout
-        .addLineItems(this.state.cartId, this.state.lineItems)
-        .then(checkout => {
-          return checkout.lineItems;
-        });
-
-      console.log("checkout.lineItems", lineItemsAdd);
-    }
-  };
-
-  // For testing
-  fetchCheckout = () => {
-    if (this.state.cartId) {
-      shopifyAPI.checkout.fetch(this.state.cartId).then(checkout => {
-        console.log(checkout);
-      });
-    }
   };
 
   render() {
@@ -120,13 +94,6 @@ class ForSale extends Component {
             </div>
           )}
         </div>
-        {/* Buttons For Testing */}
-        <button className="btn btn-primary" onClick={this.checkout}>
-          checkout
-        </button>
-        <button className="btn btn-success" onClick={this.fetchCheckout}>
-          Fetch Checkout
-        </button>
       </section>
     );
   }
