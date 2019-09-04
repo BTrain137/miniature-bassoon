@@ -66,10 +66,11 @@ class Cart extends Component {
   }
 
   trashCan = variantId => {
-    const lineItems = this.state.lineItems.filter(
+    const lineItems = this.props.lineItems.filter(
       item => item.variant_id !== variantId
     );
-    this.setState({ lineItems });
+    // this.setState({ lineItems });
+    this.props.updateLineItems(lineItems)
     this.subTotal(lineItems);
   };
 

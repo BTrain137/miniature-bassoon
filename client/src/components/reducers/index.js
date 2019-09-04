@@ -35,9 +35,7 @@ const updateLineItemsReducer = (lineItems = [], { type, payload }) => {
 const cartCountReducer = (count = 0, { type, payload }) => {
   switch (type) {
     case 'UPDATE_LINE_ITEMS':
-      if (count < payload.length) {
-        return payload.length;
-      }
+      return payload.length;
 
     default:
       return count;
