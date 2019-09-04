@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { connect } from 'react-redux';
+import { updateLineItems } from '../components/actions';
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Client from "shopify-buy";
@@ -11,56 +13,78 @@ const shopifyAPI = Client.buildClient({
   storefrontAccessToken: "caf3407b04b77828c161e497b106ab42"
 });
 
-class Saved extends Component {
+class Cart extends Component {
   state = {
     orderNotes: "",
     subTotal: 0,
     webUrl: "",
-    lineItems: [],
     cartId: ""
   };
 
   componentDidMount() {
     const variantIds = {};
-    lineItems.forEach(cartItem => {
+    this.props.lineItems.forEach(cartItem => {
       variantIds["updates_" + cartItem.variant_id] = cartItem.quantity;
     });
-    this.setState({ lineItems, ...variantIds });
+    // this.setState({ lineItems, ...variantIds });
+
     this.subTotal(lineItems);
   }
 
   goToShopifyCheckout = async () => {
-    if (this.state.cartId) {
-      const webUrl = await shopifyAPI.checkout
-        .fetch(this.state.cartId)
-        .then(checkout => {
-          return checkout.webUrl;
-        });
 
-      this.setState({ webUrl });
-      window.location.replace(this.state.webUrl);
-    }
-  };
+    // console.log('Hi from goToShopifyCheckout')
+    // if (this.state.cartId) {
+    //   const webUrl = await shopifyAPI.checkout
+    //     .fetch(this.state.cartId)
+    //     .then(checkout => {
+    //       console.log(checkout.webUrl)
+    //       return checkout.webUrl;
+    //     });
+
+    //   this.setState({ webUrl });
+    //   window.location.replace(this.state.webUrl);
+    // }
+
+    shopifyAPI.checkout.create()
+      .then(checkout => {
+
+        const cartItems = this.props.lineItems.map(({ variant_id, quantity }) => {
+          return {
+            variantId: variant_id,
+            quantity
+          }
+        })
+        shopifyAPI.checkout.addLineItems(checkout.id, cartItems).then((checkout) => {
+          // Do something with the updated checkout
+          //   console.log(checkout.lineItems); // Array with one additional line item
+          window.location.replace(checkout.webUrl);
+          // });
+        })
+      })
+
+  }
 
   trashCan = variantId => {
-    const lineItems = this.state.lineItems.filter(
+    const lineItems = this.props.lineItems.filter(
       item => item.variant_id !== variantId
     );
-    this.setState({ lineItems });
+    // this.setState({ lineItems });
+    this.props.updateLineItems(lineItems)
     this.subTotal(lineItems);
   };
 
   upDateQuantity = (variantId, math) => {
-    const cart = this.state.lineItems.filter(item => {
+    const cart = this.props.lineItems.filter(item => {
       if (item.variant_id === variantId) {
         if (item.quantity > 0) {
           item.quantity += parseInt(math);
-        } 
-        else if (math === "1"  && item.quantity === 0) {
+        }
+        else if (math === "1" && item.quantity === 0) {
           item.quantity += 1;
         }
 
-        this.setState({ ["updates_" + variantId]: item.quantity });
+        // this.setState({ ["updates_" + variantId]: item.quantity });
       }
       return item;
     });
@@ -82,13 +106,14 @@ class Saved extends Component {
     const inputValue = e.target.value;
 
     if ((inputValue === "" || re.test(inputValue)) && inputValue < 100) {
-      const lineItems = this.state.lineItems.map(item => {
+      const lineItems = this.props.lineItems.map(item => {
         if (item.variant_id === variantId) {
           item.quantity = +inputValue;
         }
         return item;
       });
-      this.setState({ lineItems, [e.target.name]: +inputValue });
+      // this.setState({ lineItems, [e.target.name]: +inputValue });
+      this.props.updateLineItems([...lineItems]);
       this.subTotal(lineItems);
     }
   };
@@ -100,8 +125,8 @@ class Saved extends Component {
           Your Cart
         </h1>
 
-        {this.state.lineItems.length ? (
-          this.state.lineItems.map(lineItem => {
+        {this.props.lineItems.length ? (
+          this.props.lineItems.map(lineItem => {
             return (
               <div className="row cart-row" key={lineItem.variant_id}>
                 <div className="offset-1 col-2 d-none d-md-block">
@@ -157,7 +182,7 @@ class Saved extends Component {
                         <input
                           type="text"
                           className="js--num"
-                          value={this.state["updates_" + lineItem.variant_id]}
+                          value={lineItem.quantity}
                           min="1"
                           data-id={lineItem.variant_id}
                           aria-label="quantity"
@@ -191,21 +216,21 @@ class Saved extends Component {
             );
           })
         ) : (
-          <div
-            style={{ height: "30vh", minHeight: "300px" }}
-            className="d-flex align-items-center justify-content-center flex-column"
-          >
-            <h2 className="text-center">Empty Cart</h2>
-            <Link to="/">
-              <button
-                style={{ backgroundColor: "#A4664D", border: "none" }}
-                className="btn btn-primary btn-border-radius mt-4"
-              >
-                Continue Shopping
+            <div
+              style={{ height: "30vh", minHeight: "300px" }}
+              className="d-flex align-items-center justify-content-center flex-column"
+            >
+              <h2 className="text-center">Empty Cart</h2>
+              <Link to="/">
+                <button
+                  style={{ backgroundColor: "#A4664D", border: "none" }}
+                  className="btn btn-primary btn-border-radius mt-4"
+                >
+                  Continue Shopping
               </button>
-            </Link>
-          </div>
-        )}
+              </Link>
+            </div>
+          )}
         <div className="row cart-row d-flex justify-content-between">
           <div className="offset-1 col-4">
             Order Notes:
@@ -241,4 +266,11 @@ class Saved extends Component {
   }
 }
 
-export default Saved;
+
+const mapStateToProps = state => {
+  return {
+    lineItems: state.lineItems,
+  }
+}
+
+export default connect(mapStateToProps, { updateLineItems })(Cart);

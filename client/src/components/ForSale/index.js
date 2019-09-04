@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { connect } from 'react-redux';
+import { getProducts, updateLineItems } from '../actions';
 import Client from "shopify-buy";
 import Card from "../Card";
 import "./style.css";
@@ -13,8 +15,6 @@ const shopifyAPI = Client.buildClient({
 
 class ForSale extends Component {
   state = {
-    cards: [],
-    lineItems: [],
     cartId: ""
   };
 
@@ -23,15 +23,15 @@ class ForSale extends Component {
     shopifyAPI.product
       .fetchAll()
       .then(products => {
-        const cards = products.map(({ variants, title }) => {
+        const reducedProducts = products.map(({ variants, title }) => {
           return {
             title,
             variants
           };
         });
 
-        if(this._isMounted) {
-          this.setState({ cards });
+        if (this._isMounted) {
+          this.props.getProducts(reducedProducts)
         }
       })
       .catch(err => {
@@ -45,24 +45,27 @@ class ForSale extends Component {
 
   addToCart = variant => {
     let isItemExist = false;
-    let lineItems = [...this.state.lineItems];
-    if (lineItems.length) {
-      lineItems.forEach(lineItem => {
-        if (lineItem.variant_id === variant.variant_id) {
-          lineItem.quantity += 1;
-          isItemExist = true;
-        }
-      });
-    }
+
+    const lineItemsCopy = this.props.lineItems.map(lineItem => {
+      if (lineItem.variant_id === variant.variant_id) {
+        lineItem.quantity += 1;
+        isItemExist = true
+      }
+      return lineItem;
+    });
 
     if (!isItemExist) {
-      lineItems.push(variant);
+      lineItemsCopy.push(variant);
     }
 
-    this.setState({ lineItems });
+
+    this.props.updateLineItems(lineItemsCopy)
+
+
   };
 
   render() {
+
     return (
       <section className="for-sale mt-4">
         <div className="text-center mb-3">
@@ -70,8 +73,8 @@ class ForSale extends Component {
           <div className="block-note">{this.props.children}</div>
         </div>
         <div className="container mx-auto row d-flex justify-content-center">
-          {this.state.cards.length ? (
-            this.state.cards.map((card, i) => {
+          {this.props.products.length ? (
+            this.props.products.map((card, i) => {
               return (
                 <Card
                   key={i}
@@ -83,20 +86,28 @@ class ForSale extends Component {
               );
             })
           ) : (
-            <div className={"text-center mt-5"}>
-              <div
-                className="spinner-border"
-                style={{ width: "3rem", height: "3rem" }}
-                role="status"
-              >
-                <span className="sr-only">Loading...</span>
+              <div className={"text-center mt-5"}>
+                <div
+                  className="spinner-border"
+                  style={{ width: "3rem", height: "3rem" }}
+                  role="status"
+                >
+                  <span className="sr-only">Loading...</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </section>
     );
   }
 }
 
-export default ForSale;
+const mapStateToProps = state => {
+  return {
+    products: state.products,
+    lineItems: state.lineItems,
+  }
+}
+
+export default connect(mapStateToProps, { getProducts, updateLineItems })(ForSale);
+
