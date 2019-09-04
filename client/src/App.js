@@ -12,7 +12,7 @@ import "./style.css";
 
 function App() {
   return (
-    <Provider store={createStore(reducers, { products: [] })}>
+    <Provider store={createStore(reducers)}>
       <Router>
         <div>
           <Nav />

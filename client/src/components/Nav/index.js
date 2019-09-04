@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { connect } from 'react-redux';
+import { cartCount } from '../actions';
 import "./style.css";
 
 import lineItems from "../../pages/cartDummyData.json";
@@ -7,20 +9,20 @@ import lineItems from "../../pages/cartDummyData.json";
 class Nav extends Component {
   state = {
     lineItems: [],
-    cartNumQuantity: 0,
     cartId: ""
   };
 
-  componentDidMount() {
-    this.updateCartQuantity();
-  }
+  // componentDidMount() {
+  //   this.updateCartQuantity();
+  // }
 
   updateCartQuantity() {
-    let cartNumQuantity = lineItems.reduce((total, { quantity }) => {
-      return parseInt(total) + parseInt(quantity);
-    }, 0);
+    // let cartNumQuantity = lineItems.reduce((total, { quantity }) => {
+    //   return parseInt(total) + parseInt(quantity);
+    // }, 0);
 
-    this.setState({ cartNumQuantity });
+    // this.setState({ cartNumQuantity });
+    // this.props.cartCount({cartCount})
   }
 
   render() {
@@ -41,13 +43,13 @@ class Nav extends Component {
                   <li className="nav-item">
                     <Link to="/cart">
                       <i className="pe-7s-cart nav-cart-icon" />
-                      {this.state.cartNumQuantity ? (
+                      {this.props.cartCount ? (
                         <span className="nav-cart-item-number">
-                          {this.state.cartNumQuantity}
+                          {this.props.cartCount}
                         </span>
                       ) : (
-                        <span className="nav-cart-item-none">0</span>
-                      )}
+                          <span className="nav-cart-item-none">0</span>
+                        )}
                     </Link>
                   </li>
                 </ul>
@@ -61,4 +63,10 @@ class Nav extends Component {
   }
 }
 
-export default Nav;
+const mapStateToProps = state => {
+  return {
+    cartCount: state.cartCount
+  }
+}
+
+export default connect(mapStateToProps)(Nav);

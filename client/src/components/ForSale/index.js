@@ -44,8 +44,23 @@ class ForSale extends Component {
   }
 
   addToCart = variant => {
+    let isItemExist = false;
 
-    this.props.updateLineItems(variant)
+    const lineItemsCopy = this.props.lineItems.map(lineItem => {
+      if (lineItem.variant_id === variant.variant_id) {
+        lineItem.quantity += 1;
+        isItemExist = true
+      }
+      return lineItem;
+    });
+
+    if (!isItemExist) {
+      lineItemsCopy.push(variant);
+    }
+
+
+    this.props.updateLineItems(lineItemsCopy)
+
 
   };
 

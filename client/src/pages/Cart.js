@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from 'react-redux';
+import { updateLineItems } from '../components/actions';
 import { Container } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import Client from "shopify-buy";
@@ -104,13 +105,14 @@ class Cart extends Component {
     const inputValue = e.target.value;
 
     if ((inputValue === "" || re.test(inputValue)) && inputValue < 100) {
-      const lineItems = this.state.lineItems.map(item => {
+      const lineItems = this.props.lineItems.map(item => {
         if (item.variant_id === variantId) {
           item.quantity = +inputValue;
         }
         return item;
       });
-      this.setState({ lineItems, [e.target.name]: +inputValue });
+      // this.setState({ lineItems, [e.target.name]: +inputValue });
+      this.props.updateLineItems([...lineItems]);
       this.subTotal(lineItems);
     }
   };
@@ -266,8 +268,8 @@ class Cart extends Component {
 
 const mapStateToProps = state => {
   return {
-    lineItems: state.lineItems
+    lineItems: state.lineItems,
   }
 }
 
-export default connect(mapStateToProps)(Cart);
+export default connect(mapStateToProps, { updateLineItems })(Cart);
